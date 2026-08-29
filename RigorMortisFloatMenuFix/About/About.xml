@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>MoeLotl: Rigor Mortis - Float Menu Fix</name>
+  <author>Vorsel</author>
+  <packageId>vorsel.rigormortis.floatmenufix</packageId>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+    </li>
+    <li>
+      <packageId>fxz.moelotlzombie.update</packageId>
+      <displayName>MoeLotl: Rigor Mortis</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/3454053400</steamWorkshopUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>brrainz.harmony</li>
+    <li>fxz.moelotlzombie.update</li>
+  </loadAfter>
+  <description><![CDATA[【中文说明】
+
+【问题发现】
+在一个启用了数百个 Mod 的存档中逐项排查后，我确认「七日重生 / MoeLotl: Rigor Mortis」会导致地图右键菜单保持开启时持续掉帧。
+
+症状非常稳定：同一格内可供右键菜单检查的 Thing 越多，掉帧越严重，而且物品是不是七日重生自己的内容并不重要。Adaptive Storage 等储存 Mod 会进一步放大这个现象，但不是根因。
+
+随后使用 Codex 检查 RimWorld 1.6 的 FloatMenu 调用链、七日重生源码及编译后的 DLL，并结合诊断日志和反复 A/B 测试定位了几个高频性能问题。
+
+【主要修复】
+
+1. RM_Recover 对无关物品反复扫描地图
+RimWorld 1.6 会在右键菜单保持开启期间持续重新验证菜单选项。
+
+七日重生的 RM_Recover WorkGiver 会在检查候选目标时遍历地图中的大量 Thing，寻找需要回收的异常僵尸石棺。即使右键的是医药、食物、武器等无关物品，这套逻辑仍可能被反复触发。
+
+修复：在进入原逻辑前增加轻量目标过滤。目标不是七日重生的僵尸石棺时立即跳过；真正的石棺仍执行原 Mod 的完整逻辑。
+
+2. 萌螈功法书 WorkGiver 对无关目标执行昂贵搜索
+Axolotl_ReadMoeLotlQiSkillBooks 会搜索地图上的功法书、功法书架及其内容，并执行多层过滤。
+
+右键菜单会对无关目标重复调用这类检查，因此萌螈 Pawn 的掉帧通常比普通 Human 更严重。
+
+修复：目标不是萌螈功法书时直接跳过该 WorkGiver；真正的功法书仍保持原有阅读功能。
+
+3. 符咒图形可能首次从并行渲染线程加载
+贴符或执行符咒时，相关 PawnRenderNodeWorker 可能在并行预渲染流程首次调用 GraphicDatabase.Get，从而产生：
+“Attempted to load a graphic off the main thread”
+
+修复：在主线程启动阶段预载七日重生使用的符咒 Graphic_Multi，并让相关渲染节点使用已经准备好的缓存。
+
+【本机测试，仅供参考】
+
+普通 Human：
+• 25 个同格医药：约 75–80 FPS → 144 FPS
+• 5 个同格医药：约 95–100 FPS → 144 FPS
+• 单格物品架放满：约 80 FPS → 约 140 FPS
+
+萌螈：
+• 25 个同格医药：约 40–50 FPS → 约 140 FPS
+• 5 个同格医药：约 65–70 FPS → 约 142 FPS
+• 单格物品架放满：约 45–55 FPS → 约 140 FPS
+
+以上数据来自我的最低 Mod 测试环境和 MSI Afterburner 测试，不代表所有电脑、存档和 Mod 列表都能得到相同结果。
+
+【兼容性与存档】
+本补丁通过 Harmony 在运行时增加目标预过滤和图形缓存，不修改七日重生或萌螈 Mod 的原始文件，也不添加需要写入存档的新 Def、Thing 或组件。
+
+理论上可以在现有存档中途加入或移除。加入或移除后请完整重启游戏；重要存档仍建议正常备份。
+
+【开发说明】
+问题定位、调用链调查、诊断和补丁代码由 Codex 协助完成；游戏内性能数据和功能验证由我实际进行 A/B 测试。
+
+
+【English Description】
+
+【Issue】
+After isolating mods in a setup containing several hundred mods, I confirmed that MoeLotl: Rigor Mortis could cause a severe sustained FPS drop while a map right-click menu remained open.
+
+The more Things present in the clicked cell, the worse the slowdown became, regardless of whether those items belonged to Rigor Mortis. Storage mods such as Adaptive Storage could amplify the symptom, but were not the root cause.
+
+Codex was used to inspect the RimWorld 1.6 FloatMenu call chain, the Rigor Mortis source code, and the compiled DLL. Repeated diagnostics and A/B tests narrowed the problem down to several hot paths.
+
+【Main fixes】
+
+1. RM_Recover performed expensive work for unrelated targets
+RimWorld 1.6 continuously revalidates float-menu options while the menu is open.
+
+RM_Recover could repeatedly scan large numbers of map Things while checking targets, even when the clicked item was unrelated to zombie casket recovery.
+
+Fix: unrelated targets are rejected with a lightweight prefilter before entering the original WorkGiver logic. Genuine Rigor Mortis caskets still use the original behavior.
+
+2. MoeLotl skill-book checks ran for unrelated targets
+Axolotl_ReadMoeLotlQiSkillBooks searches map skill books, shelves, and their contents. Float-menu validation could repeatedly trigger this work for unrelated targets.
+
+Fix: the WorkGiver is skipped unless the target is actually a MoeLotl skill book. Normal skill-book behavior remains unchanged.
+
+3. Incantation graphics could first load on a parallel render thread
+Some incantation render nodes could call GraphicDatabase.Get during parallel pre-rendering and trigger:
+“Attempted to load a graphic off the main thread”
+
+Fix: the required Graphic_Multi assets are preloaded on the main thread and reused by the render nodes.
+
+【Local test results — reference only】
+
+Ordinary Human:
+• 25 medicine Things in one cell: ~75–80 FPS → 144 FPS
+• 5 medicine Things: ~95–100 FPS → 144 FPS
+• Filled single-cell storage: ~80 FPS → ~140 FPS
+
+MoeLotl:
+• 25 medicine Things: ~40–50 FPS → ~140 FPS
+• 5 medicine Things: ~65–70 FPS → ~142 FPS
+• Filled single-cell storage: ~45–55 FPS → ~140 FPS
+
+Results depend on CPU, map size, frame cap, Thing count, other mods, and monitoring software.
+
+【Compatibility】
+This patch uses Harmony runtime patches and graphic caching. It does not modify the original Rigor Mortis or MoeLotl files and adds no new save-persistent Defs, Things, or components.
+
+It should therefore be safe in theory to add or remove from an existing save. Fully restart the game after changing the mod list, and keep normal backups for important saves.
+
+【Development】
+Codex assisted with source investigation, diagnostics, and patch implementation. All performance and gameplay validation was performed through in-game A/B testing.]]></description>
+</ModMetaData>

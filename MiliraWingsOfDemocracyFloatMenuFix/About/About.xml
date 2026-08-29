@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Milira: Wings of Democracy - Float Menu Fix</name>
+  <author>Vorsel</author>
+  <packageId>vorsel.milirawingsofdemocracy.floatmenufix</packageId>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+    </li>
+    <li>
+      <packageId>sleepycot.wingsofdemocracy</packageId>
+      <displayName>Milira: Wings of Democracy</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/3626456960</steamWorkshopUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>brrainz.harmony</li>
+    <li>sleepycot.wingsofdemocracy</li>
+  </loadAfter>
+  <description><![CDATA[【中文说明】
+
+【问题发现】
+在一个启用了数百个 Mod 的存档中逐项排查后，我发现 Milira Race 和 Milira: Wings of Democracy 都会让地图右键菜单在开启期间持续占用较多性能。两个问题是在同一轮排查中发现的，但来自不同 Mod、对应不同代码路径，因此分别制作了两个独立的 Fix Mod。
+
+随后使用 Codex 检查 RimWorld 1.6 的 FloatMenu 调用链、XML Def 和编译后的程序集，并通过 A/B 测试确认修复效果。
+
+【主要修复】
+
+1. 无关目标触发太阳晶体容器检查
+PLAMilira_EmptySolarCrystalContainer 会扫描地图并寻找储存位置，即使右键的是物品架、地面或 Milira Race 的日凌聚光塔。
+
+修复：只有日凌晶辐射催化器可以进入这套逻辑。预期可消除 Wings 对无关右键目标造成的持续开销。
+
+2. PLAMilira_PoisonFood 重复执行同一检查
+当前 1.6 Def 将它配置为与太阳晶体容器相同的 worker，因此右键菜单会重复生成相同检查和操作。
+
+修复：仅在右键菜单中跳过这一重复项，不修改原 Mod 的 Def 或普通 AI 扫描。
+
+3. 日凌晶辐射催化器重复搜索储存位置
+催化器有产物时，菜单会反复执行两次储存位置搜索。
+
+修复：短期缓存最终菜单结果。预期可降低菜单保持开启时的持续耗时，日凌晶提取功能保持不变。
+
+4. 重复的补充燃料按钮
+未征召小人会同时看到 rearming 和补充燃料；两者对催化器使用相同的补燃料 JobDriver。
+
+修复：未征召时隐藏重复的 rearming 选项；征召时仍保留它，以免失去原 Mod 提供的征召补充能力。
+
+【本机测试，仅供参考】
+• 日凌聚光塔：约 90–100 FPS → 约 135–140 FPS
+• 日凌晶辐射催化器：修复后约 135–140 FPS，提取功能测试正常
+
+以上结果来自本机存档和 MSI Afterburner，仅供参考。
+
+【兼容性与存档】
+补丁通过 Harmony 运行，只调整右键菜单检查，不修改 Wings of Democracy 原文件、普通 AI 工作扫描或存档数据。理论上可以中途加入或移除；更改后请完整重启游戏，并正常备份重要存档。
+
+【开发说明】
+问题定位、调用链调查和补丁代码由 Codex 协助完成；性能数据与功能验证由我在游戏内实际测试。
+
+
+【English Description】
+
+【Issue】
+While continuing to investigate float-menu slowdowns in a setup with several hundred mods, I found that Milira: Wings of Democracy repeatedly ran its WorkGiver checks for ordinary storage and unrelated buildings. Logs identified the solar-crystal container check and a duplicated WorkGiver configuration as the main costs.
+
+Codex was used to inspect the RimWorld 1.6 FloatMenu call chain, XML Defs, and compiled assembly. The changes were then verified through in-game A/B testing.
+
+【Main fixes】
+
+1. Solar-crystal container checks on unrelated targets
+PLAMilira_EmptySolarCrystalContainer could scan the map and search for storage even when the clicked target was storage, a cell, or Milira Race's Solar Fuel tower.
+
+Fix: only the Radiation Catalyzer may enter this logic. This is expected to remove Wings-related sustained cost from unrelated float menus.
+
+2. Duplicate PLAMilira_PoisonFood check
+In the current 1.6 Defs it uses the same worker as the solar-crystal container, causing the same menu check and action to be processed twice.
+
+Fix: the duplicate is skipped only during float-menu generation. Original Defs and normal AI scans are not modified.
+
+3. Repeated storage searches for the Radiation Catalyzer
+When output was available, menu validation repeatedly performed two storage searches.
+
+Fix: the final menu result is briefly cached. Solar Crystal extraction remains unchanged.
+
+4. Duplicate refueling options
+Undrafted pawns could receive both rearming and refuel options, which use the same refueling JobDriver for this building.
+
+Fix: the duplicate rearming option is hidden while undrafted. It remains available while drafted so the original drafted-refueling capability is preserved.
+
+【Local test results — reference only】
+• Milira Race Solar Fuel tower: about 90–100 FPS → about 135–140 FPS
+• Radiation Catalyzer: about 135–140 FPS after the fix; extraction tested successfully
+
+These MSI Afterburner results are from one local setup and are provided only as a reference.
+
+【Compatibility】
+This Harmony patch only adjusts float-menu checks. It does not modify Wings of Democracy files, normal AI work scans, or save data. It should be safe in theory to add or remove mid-save; fully restart the game after changing the mod list and keep normal backups.
+
+【Development】
+Codex assisted with call-chain investigation and implementation. Performance measurements and gameplay validation were performed in game by the author.]]></description>
+</ModMetaData>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>MoeLotl Settlement Trade Faction Fix</name>
+  <author>Vorsel</author>
+  <packageId>vorsel.moelotl.settlementtradefactionfix</packageId>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+    </li>
+    <li>
+      <packageId>HenTaiLoliTeam.Axolotl</packageId>
+      <displayName>MoeLotl Race</displayName>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>brrainz.harmony</li>
+    <li>HenTaiLoliTeam.Axolotl</li>
+    <li>fxz.moelotlzombie.update</li>
+    <li>rtxyd.RealFactionGuest</li>
+  </loadAfter>
+  <description><![CDATA[
+【中文介绍】
+萌螈派系出售的萌螈居然不属于萌螈派系，明明文化都是萌螈派系的文化，难道是叛变之后被抓回来然后转变了文化？个人感觉非常诡异，因此制作了这个 Mod。
+
+本 Mod 会在萌螈派系据点生成贸易库存时，将出售的萌螈归属到当前萌螈派系。无论是否安装 Real Faction Guest (Forked)，这一修复都会正常生效。
+
+同时，本 Mod 对 Real Faction Guest (Forked) 做了兼容适配：同时启用时，本 Mod 会排在它后面，并在其种族替换逻辑运行前提供正确的萌螈派系信息，避免萌螈派系据点出售米莉拉、鼠族、Miho 等其他种族的情况。
+
+Real Faction Guest (Forked) 不是必需依赖。不修改原模组文件，不添加需要写入存档的新 Def、Thing 或组件，也不影响其他派系、任务、事件、商队或普通 Pawn 的生成。可以加入或移除于现有存档；已经生成的旧库存需要等待据点补货，或读取尚未打开该据点贸易的存档。
+
+【开发说明】
+问题定位、兼容方案设计及代码由 Codex 协助完成；游戏内测试与功能验证由作者进行。
+
+【English Description】
+It is very strange that MoeLotls sold by the MoeLotl faction do not actually belong to the MoeLotl faction, so this mod was created to correct that behavior.
+
+When a MoeLotl faction settlement generates its trade stock, this mod assigns every traded MoeLotl to the current MoeLotl faction. The fix works whether or not Real Faction Guest (Forked) is installed.
+
+Compatibility for Real Faction Guest (Forked) is also included. When both mods are active, this mod loads after it and supplies the correct MoeLotl faction before its race-replacement logic runs. This prevents MoeLotl settlements from offering unrelated races such as Milira, Ratkin, Miho, and others in place of MoeLotls.
+
+Real Faction Guest (Forked) is optional. This mod does not modify the original mod files, add new save-persistent Defs, Things, or components, or affect pawn generation for other factions, quests, events, caravans, or ordinary pawns. It can be added to or removed from an existing save. Previously generated stock must restock, or the player can load a save from before that settlement's trade stock was generated.
+
+【Development】
+Codex assisted with issue diagnosis, compatibility design, and code implementation. In-game testing and functional verification were performed by the author.
+]]></description>
+</ModMetaData>

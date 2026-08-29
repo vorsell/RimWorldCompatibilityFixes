@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Milira Race - Float Menu Fix</name>
+  <author>Vorsel</author>
+  <packageId>vorsel.milirarace.floatmenufix</packageId>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+    </li>
+    <li>
+      <packageId>Ancot.MiliraRace</packageId>
+      <displayName>Milira Race</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/3256974620</steamWorkshopUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>brrainz.harmony</li>
+    <li>Ancot.MiliraRace</li>
+  </loadAfter>
+  <description><![CDATA[【中文说明】
+
+【问题发现】
+在一个启用了数百个 Mod 的存档中逐项排查后，我发现 Milira Race 和 Milira: Wings of Democracy 都会让地图右键菜单在开启期间持续占用较多性能。两个问题是在同一轮排查中发现的，但来自不同 Mod、对应不同代码路径，因此分别制作了两个独立的 Fix Mod。
+
+随后使用 Codex 检查 RimWorld 1.6 的 FloatMenu 调用链和 Milira Race 程序集，并结合性能日志与 A/B 测试定位了以下问题。
+
+【主要修复】
+
+1. 无关目标触发日光燃料 WorkGiver
+Milira_EmptySunLightFuelContainer 会在菜单重验证时扫描地图上的 Thing。原版物品、地面和物品架也可能反复触发它。
+
+修复：先检查右键目标，只有真正带有日光燃料生成组件的建筑才进入原逻辑。预期可消除普通物品和物品架产生的大部分额外开销。
+
+2. 日凌聚光塔重复搜索储存位置
+对有产物的日凌聚光塔生成菜单时，原逻辑会在 HasJobOnThing 和 JobOnThing 中重复寻找储存位置，并随菜单持续重验证。
+
+修复：短期缓存聚光塔的最终菜单结果，同时继续检查建筑和产物状态。预期可明显降低菜单保持开启时的持续耗时，提取功能保持不变。
+
+【本机测试，仅供参考】
+• 单格物品架放满：约 70 FPS → 大部分时间超过 140 FPS
+• 有产物的日凌聚光塔：约 105–110 FPS → 约 135–140 FPS
+
+以上结果来自本机存档和 MSI Afterburner，不代表所有电脑、存档及 Mod 列表都能获得相同提升。
+
+【兼容性与存档】
+补丁通过 Harmony 运行，只调整右键菜单检查，不修改 Milira Race 原文件、普通 AI 工作扫描或存档数据。理论上可以中途加入或移除；更改后请完整重启游戏，并正常备份重要存档。
+
+本补丁只处理 Milira Race，不包含 Wings of Democracy 或 Milira Imperium 的修复。
+
+【开发说明】
+问题定位、调用链调查和补丁代码由 Codex 协助完成；性能数据与功能验证由我在游戏内实际测试。
+
+
+【English Description】
+
+【Issue】
+While isolating mods in a save with several hundred entries, I found that Milira Race could add substantial sustained cost while a map float menu remained open. The slowdown generally became worse when more Things occupied the clicked cell, even when those Things were unrelated to Milira Race.
+
+Codex was used to inspect the RimWorld 1.6 FloatMenu call chain and the Milira Race assembly. Performance logs and repeated A/B tests identified the following hot paths.
+
+【Main fixes】
+
+1. Solar-fuel WorkGiver checks on unrelated targets
+Milira_EmptySunLightFuelContainer could scan map Things during menu revalidation, even for ordinary items, cell targets, and storage buildings.
+
+Fix: a lightweight prefilter allows only buildings with the solar-fuel generator component to enter the original logic. This is expected to remove most of the extra cost from ordinary items and storage menus.
+
+2. Repeated storage searches for the Solar Energy Conversion Collection Tower
+For a tower containing output, HasJobOnThing and JobOnThing both searched for storage while the menu was continuously revalidated.
+
+Fix: the final tower menu result is briefly cached while the building and output state are still checked. Extraction behavior remains unchanged.
+
+【Local test results — reference only】
+• Filled single-cell storage: about 70 FPS → usually above 140 FPS
+• Tower containing output: about 105–110 FPS → about 135–140 FPS
+
+These MSI Afterburner results come from one local setup and will vary with hardware, saves, and mod lists.
+
+【Compatibility】
+This Harmony patch only adjusts float-menu checks. It does not modify Milira Race files, normal AI work scans, or save data. It should be safe in theory to add or remove mid-save; fully restart the game after changing the mod list and keep normal backups.
+
+This patch targets Milira Race only. Wings of Democracy and Milira Imperium require separate fixes.
+
+【Development】
+Codex assisted with call-chain investigation and implementation. Performance measurements and gameplay validation were performed in game by the author.]]></description>
+</ModMetaData>
