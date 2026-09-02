@@ -9,3 +9,6 @@ A private source archive containing four small RimWorld 1.6 compatibility and be
 
 Each subdirectory is a standalone RimWorld mod. See its `About/About.xml` for dependencies, load order, and full details.
 
+## Workstation workflow
+
+On the current workstation, the corresponding directories under `G:\SteamLibrary\steamapps\common\RimWorld\Mods` are the authoritative development, build-output, deployment, and game-test copies. This repository is the backup and Git/GitHub synchronization mirror. For a backup or release, compare and copy the intended files from each G-drive Mod directory into its matching subdirectory here, verify relative paths and hashes, inspect the complete repository diff, then commit and push. Do not develop in this mirror first, and never treat Steam Workshop copies as authoritative source.
